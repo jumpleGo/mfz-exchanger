@@ -1,14 +1,36 @@
 {
-  "name": "${PROJECT_NAME}",
+  "name": "mfz-exchanger",
   "version": "1.0.0",
-  "description": "",
-  "main": "dist/index.js",
+  "description": "MFZ Exchanger - crypto exchange service",
+  "private": true,
+  "type": "module",
   "scripts": {
-    "build": "tsc"
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "start": "node .output/server/index.mjs",
+    "postinstall": "nuxt prepare"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@pinia/nuxt": "latest",
+    "@nuxt/image": "latest",
+    "@nuxtjs/tailwindcss": "latest",
+    "@vuelidate/core": "latest",
+    "@vuelidate/validators": "latest",
+    "axios": "latest",
+    "firebase": "latest",
+    "lodash.debounce": "latest",
+    "luxon": "latest",
+    "maska": "latest",
+    "nuxt": "latest",
+    "nuxt-mail": "latest",
+    "pinia": "latest",
+    "vue": "latest"
+  },
   "devDependencies": {
-    "typescript": "^5.5.3"
-  },
-  "private": true
+    "sass": "latest",
+    "sass-embedded": "latest",
+    "typescript": "latest"
+  }
 }

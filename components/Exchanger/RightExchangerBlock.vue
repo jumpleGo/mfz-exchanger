@@ -1057,5 +1057,5 @@ const handleTransactionSuccess = (
 };
 </script>
 <style lang="scss" scoped>
-@use "../../style/exchanger/rightExchangerBlock.scss" as *;
+@import "../../style/exchanger/rightExchangerBlock.scss";
 </style>

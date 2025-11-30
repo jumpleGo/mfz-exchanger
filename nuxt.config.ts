@@ -3,6 +3,15 @@ export default defineNuxtConfig({
   ssr: true,
   rootDir: ".",
 
+  nitro: {
+    preset: 'node-server',
+    compressPublicAssets: true,
+  },
+
+  routeRules: {
+    '/': { ssr: true, prerender: false },
+  },
+
   devServer: {
     port: 8081,
   },
@@ -65,6 +74,16 @@ export default defineNuxtConfig({
       databaseURL: process.env.databaseURL,
       ASSETS_IMAGE_BUCKET: process.env.ASSETS_IMAGE_BUCKET,
       SITE_URL: process.env.SITE_URL,
+    },
+  },
+
+  experimental: {
+    payloadExtraction: false,
+  },
+
+  hooks: {
+    'render:html': (html) => {
+      html.head.push('<meta name="renderer" content="ssr">')
     },
   },
 });

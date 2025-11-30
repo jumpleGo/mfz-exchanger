@@ -281,7 +281,7 @@ const backToPair = () => {
 };
 </script>
 <style lang="scss">
-@use "./../style/exchanger.scss" as *;
+@import "./../style/exchanger.scss";
 .exchanger__wrapper {
   padding: 15px 0;
   display: flex;
