@@ -1,0 +1,32 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+
+* {
+  touch-action: manipulation;
+  -ms-touch-action: manipulation;
+  -webkit-touch-callout: unset;
+  user-select: none;
+  -webkit-user-select: none;
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  background: linear-gradient(180deg, #1a1a1a 0%, #0a0a0a 100%);
+  color: white;
+}
+
+.copied {
+  font-size: 16px;
+  font-weight: 600;
+  color: rgba(128, 128, 128, 0.55);
+
+  @include mobile {
+    font-size: 13px;
+  }
+}
+
+.router-link-active {
+  border-bottom-color: $brand_yellow !important;
+}
