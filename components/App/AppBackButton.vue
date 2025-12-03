@@ -1,6 +1,6 @@
 <template>
   <div class="app-back-button">
-    ←
+    <img src="/assets/icons/icon-left.svg" alt="">
   </div>
 </template>
 <style lang="scss" scoped>
@@ -25,3 +25,5 @@
   }
 }
 </style>
+<script setup lang="ts">
+</script>

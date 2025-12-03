@@ -24,8 +24,17 @@ export default defineNuxtConfig({
       title: 'MFZ Exchanger',
       meta: [
         { charset: 'utf-8' },
-        { name: 'viewport', content: 'width=device-width, initial-scale=1' },
+        { 
+          name: 'viewport', 
+          content: 'width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover, user-scalable=no' 
+        },
         { name: 'description', content: 'MFZ Exchanger - обменник криптовалют' }
+      ],
+      script: [
+        {
+          src: 'https://telegram.org/js/telegram-web-app.js',
+          defer: true
+        }
       ]
     },
   },
@@ -35,6 +44,9 @@ export default defineNuxtConfig({
   },
 
   vite: {
+    server: {
+      allowedHosts: ['.ngrok-free.dev', '.ngrok.io', '.ngrok-free.app', 'localhost']
+    },
     css: {
       preprocessorOptions: {
         scss: {
@@ -70,10 +82,12 @@ export default defineNuxtConfig({
   ],
 
   runtimeConfig: {
+    TELEGRAM_BOT_TOKEN: process.env.TELEGRAM_BOT_TOKEN,
     public: {
       databaseURL: process.env.databaseURL,
       ASSETS_IMAGE_BUCKET: process.env.ASSETS_IMAGE_BUCKET,
       SITE_URL: process.env.SITE_URL,
+      TELEGRAM_BOT_USERNAME: process.env.TELEGRAM_BOT_USERNAME,
     },
   },
 

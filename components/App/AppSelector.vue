@@ -6,9 +6,10 @@
     >
       <span v-if="modelValue.name">{{ modelValue.name }}</span>
       <span v-else class="--placeholder">{{ placeholder }}</span>
-      <div :class="['app_selector__icon', { '--opened': isOpenList }]">
-        ▼
-      </div>
+      <img
+          src="/assets/down-arrow.png"
+          :class="['app_selector__icon', { '--opened': isOpenList }]"
+      />
     </div>
     <div v-if="isOpenList" ref="itemsContainer" class="app_selector__items">
       <div

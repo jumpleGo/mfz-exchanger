@@ -22,6 +22,47 @@ npm install
 databaseURL=your_firebase_database_url
 ASSETS_IMAGE_BUCKET=your_assets_bucket_url
 SITE_URL=http://localhost:8081
+TELEGRAM_BOT_TOKEN=your_telegram_bot_token
+TELEGRAM_BOT_USERNAME=your_bot_username
+```
+
+### Telegram Mini App
+
+Проект интегрирован с Telegram Mini App для уведомлений о заявках:
+
+1. **Создайте бота через @BotFather**
+2. **Создайте Mini App**: `/newapp` 
+3. **Настройте webhook**: `./scripts/setup-telegram-webhook.sh`
+
+**Автоматические функции:**
+- ✅ Автозаполнение поля telegram из данных пользователя
+- ✅ Сохранение пользователя в БД при первом открытии
+- ✅ Уведомления с кнопками прямо в Telegram чате
+- ✅ Синхронизация статуса между Mini App и чатом
+
+Подробнее см.:
+- [TELEGRAM_MINI_APP.md](./TELEGRAM_MINI_APP.md) - Интеграция Mini App
+- [TELEGRAM_ORDER_NOTIFICATIONS.md](./TELEGRAM_ORDER_NOTIFICATIONS.md) - Уведомления о заявках
+
+## Деплой
+
+Полная инструкция по деплою на продакшен с настройкой Telegram webhook:
+
+📖 **[DEPLOYMENT.md](./DEPLOYMENT.md)** - VPS, Docker, PM2, CI/CD
+
+**Быстрый старт для VPS:**
+```bash
+npm run build
+pm2 start ecosystem.config.js
+./scripts/setup-production-webhook.sh YOUR_BOT_TOKEN https://your-domain.com
+```
+
+**Быстрый старт для Docker:**
+```bash
+cp .env.example .env
+# Заполните .env
+./scripts/docker-run.sh
+./scripts/setup-production-webhook.sh YOUR_BOT_TOKEN https://your-domain.com
 ```
 
 ## Запуск

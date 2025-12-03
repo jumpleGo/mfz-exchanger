@@ -65,40 +65,6 @@
       </div>
     </div>
   </div>
-  <AppPopup v-if="showModal">
-    <div class="investment__offer">
-      <h2 id="-mfz">Инвестиции в экосистему MFZ | Donation</h2>
-      <br /><br />
-      <p>Тут я предлагаю вам инвестировать в экосистему MFZ.</p>
-      <br />
-      <p>
-        Продукты будут постоянно развиваться, а для этого нужно больше рук, чем
-        2. Вы можете поддержкать проект, и, как амбассадор, получить первые
-        бенефиты.
-      </p>
-      <br />
-      <br />
-      <h3 id="-">Бенефиты:</h3>
-      <ol>
-        <li>
-          Обмены без комиссий на протяжении 3 месяцев (после интеграции
-          обменника с Telegram App)
-        </li>
-        <li>Ранние поинты, после введения их в экосистему</li>
-      </ol>
-      <p>Далее, по усмотрению автора</p>
-      <br />
-      <p><b>Старт от 100$</b></p>
-      <br />
-      <p>
-        За подробностями
-        <nuxt-link to="https://t.me/mfz_owner" target="_blank"
-          >@mfz_owner</nuxt-link
-        >
-      </p>
-      <p>Roadmap (скоро)</p>
-    </div>
-  </AppPopup>
 
   <DynamicModal
     v-for="modal in modalsArray"
@@ -113,6 +79,7 @@
 </template>
 
 <script lang="ts" setup>
+import { shallowRef, onMounted, computed, watch } from "vue";
 import RightExchangerBlock from "~/components/Exchanger/RightExchangerBlock.vue";
 import LeftExchangerBlock from "~/components/Exchanger/LeftExchangerBlock.vue";
 import TransactionBlock from "~/components/Exchanger/TransactionBlock.vue";
@@ -120,13 +87,11 @@ import useResponsive from "~/composables/useResponsive";
 import NotificationBlock from "~/components/Exchanger/NotificationBlock.vue";
 import { storeToRefs } from "pinia";
 import { useMainStore } from "~/stores/main";
-import { okx, rateApi } from "~/api";
-import { CreateSymbolPrice } from "~/api/models/SymbolPrice";
 import DynamicModal from "~/components/App/DynamicModal.vue";
 import { useModal } from "~/composables/useModal";
 import { useExchangerStore } from "~/stores/exchanger";
-import { useGetter } from "~/composables/useGetter";
 import type { ModalConfig } from "~/composables/useModal";
+import AppLoader from "../components/App/AppLoader.vue";
 
 const HighLoadNotification = defineAsyncComponent(
   () => import("~/components/Exchanger/HighLoadNotification.vue"),
@@ -174,72 +139,46 @@ useHead({
   ],
 });
 
-const loading = shallowRef(false);
 const showError = shallowRef(false);
 const showNotification = shallowRef(false);
 const showHightLoad = shallowRef(false);
 
-const { getFromDB, getCountByValue } = useGetter();
-
-const { data, refresh, status } = await useAsyncData(async () => {
-  loading.value = true;
+const { data, refresh, status } = await useAsyncData('exchanger-init', async () => {
   try {
-    exchangerSettings.value = await getFromDB("exchangerSettings/");
-    vats.value = await getFromDB("vatsByTokens/");
-    vatsInitial.value = JSON.parse(JSON.stringify(vats.value));
-    minmaxLimit.value = await getFromDB("minmaxLimit/");
-  } catch {
-    return;
-  }
-
-  if (!exchangerSettings.value.isSiteEnable) {
-    loading.value = false;
-    return;
-  }
-
-  try {
-    const { data: pricesTickers } = await okx.getPriceByTickers();
-    pricesList.value = pricesTickers.data
-      .filter((item) =>
-        ["TON-USDT-SWAP", "NOT-USDT-SWAP"].includes(item.instId),
-      )
-      .map((item) => CreateSymbolPrice.createSymbolPriceByOKX(item));
-  } catch {
-    showError.value = true;
-  }
-
-  try {
-    const { data: priceUsdRes } = await rateApi.getPriceByTickers();
-    priceUsd.value = priceUsdRes.data.RUB.value;
-    if (priceUsd.value === 0) {
-      showError.value = true;
+    const response = await $fetch('/api/exchanger/init');
+    
+    // Устанавливаем данные из серверного ответа
+    exchangerSettings.value = response.exchangerSettings;
+    vats.value = response.vats;
+    vatsInitial.value = JSON.parse(JSON.stringify(response.vats));
+    minmaxLimit.value = response.minmaxLimit;
+    
+    // Если сайт отключен, останавливаемся
+    if (response.isSiteDisabled) {
+      return { modals: response.modals };
     }
-  } catch {
-    showError.value = true;
-  }
-
-  try {
-    const countActive = await getCountByValue(
-      "/transactions",
-      "status",
-      "done",
-    );
-    if (countActive >= 15 && !showError.value) {
-      showHightLoad.value = true;
+    
+    // Устанавливаем цены и статусы
+    pricesList.value = response.pricesList;
+    priceUsd.value = response.priceUsd;
+    showError.value = response.hasError;
+    showHightLoad.value = response.showHighLoad;
+    
+    // Показываем уведомление если включено
+    if (exchangerSettings.value?.isNotificationEnable) {
+      showNotification.value = true;
     }
-  } catch (err) {
-    // Error handled
+    
+    return { modals: response.modals };
+  } catch (error) {
+    console.error('Failed to initialize exchanger:', error);
+    showError.value = true;
+    return { modals: [] };
   }
-
-  if (exchangerSettings.value.isNotificationEnable)
-    showNotification.value = true;
-
-  const modals = await getFromDB("globalModals/");
-  loading.value = false;
-  return {
-    modals,
-  };
 });
+
+// Привязываем loading к status из useAsyncData
+const loading = computed(() => status.value === 'pending');
 
 onMounted(() => {
   if (status.value === "error") refresh();

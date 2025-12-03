@@ -1,6 +1,6 @@
 <template>
   <div class="notification-block">
-   <span v-html="text" />
+   <span class="text-black" v-html="text" />
   </div>
 </template>
 <script lang="ts" setup>

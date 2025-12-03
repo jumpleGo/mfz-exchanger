@@ -51,6 +51,7 @@
           <AppInput
             v-model="v$.telegram.$model"
             :error="v$.telegram.$error"
+            :disabled="isTelegramAutoFilled"
             id="mail"
             placeholder="@user"
             label="Телеграм ник"
@@ -198,6 +199,10 @@ import { useValidationByRules } from "~/composables/exchanger/useValidationByRul
 import { calculateExpirationTime } from "~/components/Exchanger/helpers/exchanger";
 import { sendNotification } from "~/components/Exchanger/helpers/notificationSender";
 import { checkTonAddress, checkTronAddress } from "~/api/checkAddress";
+
+const { sendOrderCreated } = useTelegramOrderNotifications();
+const { getTelegramUserData } = useTelegramAuth();
+const { isTelegramBrowser } = useTelegramWebApp();
 import { useGetter } from "~/composables/useGetter";
 
 const emit = defineEmits<{
@@ -239,6 +244,14 @@ const model = reactive<IModel>({
     this.address = "";
     this.count = 1;
   },
+});
+
+/**
+ * Проверка, автозаполнено ли поле telegram из Telegram Mini App
+ * @returns {boolean} true если открыто в Telegram и поле заполнено
+ */
+const isTelegramAutoFilled = computed(() => {
+  return isTelegramBrowser.value && model.telegram.length > 0;
 });
 
 /**
@@ -891,6 +904,17 @@ onMounted(() => {
   receivedAmountInput.value = formatWithSpaces(
     calculateAmount.value.toString(),
   );
+
+  // Автозаполнение telegram поля если открыто в Telegram Mini App
+  if (isTelegramBrowser.value) {
+    const telegramUser = getTelegramUserData();
+    if (telegramUser?.username) {
+      model.telegram = telegramUser.username;
+    } else if (telegramUser?.first_name) {
+      // Если нет username, используем first_name (без пробелов)
+      model.telegram = telegramUser.first_name.replace(/\s+/g, '');
+    }
+  }
 });
 
 /**
@@ -918,16 +942,31 @@ const sendForm = async () => {
   const expirationTime = calculateExpirationTime();
 
   try {
-    await Setter.pushToDb("transactions", payload).then((data) => {
-      handleTransactionSuccess(data, payload, expirationTime);
-    });
+    const transactionRef = await Setter.pushToDb("transactions", payload);
+    const transactionKey = transactionRef.key;
 
-    if (promoApplied.value) {
-      await Setter.updateToDb({
-        [`exchangerPromocodes/${promocode.value}/isPending`]: true,
-      });
+    if (transactionKey) {
+      handleTransactionSuccess(transactionRef, payload, expirationTime);
+
+      if (promoApplied.value) {
+        await Setter.updateToDb({
+          [`exchangerPromocodes/${promocode.value}/isPending`]: true,
+        });
+      }
+
+      if (!process.dev) {
+        sendNotification(payload);
+        
+        const telegramResponse = await sendOrderCreated(payload, transactionKey);
+        
+        if (telegramResponse?.messageId && telegramResponse?.chatId) {
+          await Setter.updateToDb({
+            [`transactions/${transactionKey}/telegramMessageId`]: telegramResponse.messageId,
+            [`transactions/${transactionKey}/telegramChatId`]: telegramResponse.chatId,
+          });
+        }
+      }
     }
-    if (!process.dev) sendNotification(payload);
   } catch (err) {
     console.error("Ошибка при отправке формы:", err);
   }

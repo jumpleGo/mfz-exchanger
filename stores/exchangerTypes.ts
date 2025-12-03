@@ -21,7 +21,9 @@ export type IActiveTransaction = {
   net: string,
   factor: number,
   telegram: string,
-  status: Status
+  status: Status,
+  telegramMessageId?: number,
+  telegramChatId?: number
 }
 
 export interface IAdmin {key: string, privileges: string}

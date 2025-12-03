@@ -133,7 +133,7 @@
 import { useExchangerStore } from "~/stores/exchanger";
 import { watch } from "vue";
 import type { Selected } from "~/stores/exchangerTypes";
-import { useGetter } from "~/composables/useGetter";
+
 const {
   coins,
   valutes,
@@ -152,14 +152,19 @@ const {
   isTonForSell,
 } = storeToRefs(useExchangerStore());
 
-const { getFromDB } = useGetter();
-
-const { data } = useAsyncData(async () => {
-  const { COINS, VALUTE, OTHERS } = await getFromDB("exchangePairs/");
-
-  coins.value = COINS;
-  valutes.value = VALUTE;
-  others.value = OTHERS;
+const { data } = useAsyncData('exchange-pairs', async () => {
+  try {
+    const response = await $fetch('/api/exchanger/pairs');
+    
+    coins.value = response.COINS;
+    valutes.value = response.VALUTE;
+    others.value = response.OTHERS;
+    
+    return response;
+  } catch (error) {
+    console.error('Failed to load exchange pairs:', error);
+    return { COINS: [], VALUTE: [], OTHERS: [] };
+  }
 });
 
 watch(selectedSell, () => {

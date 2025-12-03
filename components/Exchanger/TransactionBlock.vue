@@ -204,6 +204,8 @@ import { formatCryptoAddress } from "~/components/Exchanger/helpers/exchanger";
 import { useExchangerStore } from "~/stores/exchanger";
 import { storeToRefs } from "pinia";
 import { useGetter } from "~/composables/useGetter";
+
+const { updateOrderStatus } = useTelegramOrderNotifications();
 const { $database } = useNuxtApp();
 const exchangerStore = useExchangerStore();
 const {
@@ -241,10 +243,18 @@ onMounted(() => {
   });
 });
 
-watch(valueTransaction, (val) => {
+watch(valueTransaction, async (val) => {
   if (val.status === "payed") {
     activeTransaction.value!.status = "payed";
     window.localStorage.removeItem("transaction");
+
+    // Отправляем Telegram уведомление о выполнении заявки
+    if (!process.dev && activeTransaction.value?.key) {
+      await updateOrderStatus(
+        { ...activeTransaction.value, status: "payed" },
+        activeTransaction.value.key
+      );
+    }
   }
 });
 
@@ -276,6 +286,7 @@ const cancel = async (status: "rejected" | "timeout" | "done") => {
     status,
   };
   await Setter.updateToDb(updates);
+  
   if (activeTransaction.value.promocode) {
     const promoUpdates = {};
     if (status === "done") {
@@ -291,6 +302,14 @@ const cancel = async (status: "rejected" | "timeout" | "done") => {
       ] = false;
     }
     await Setter.updateToDb(promoUpdates);
+  }
+
+  // Отправляем Telegram уведомление об изменении статуса
+  if (!process.dev && activeTransaction.value?.key) {
+    await updateOrderStatus(
+      { ...activeTransaction.value, status },
+      activeTransaction.value.key
+    );
   }
 };
 
