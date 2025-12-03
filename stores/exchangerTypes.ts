@@ -22,6 +22,8 @@ export type IActiveTransaction = {
   factor: number,
   telegram: string,
   status: Status,
+  expirationTime?: string,
+  promocode?: string,
   telegramMessageId?: number,
   telegramChatId?: number
 }

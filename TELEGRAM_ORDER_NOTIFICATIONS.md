@@ -33,7 +33,7 @@
 
 При первом открытии Mini App пользователь **автоматически сохраняется** в Firebase:
 - Происходит в плагине `telegram.client.ts`
-- Сохраняется в `telegramUsers/{userId}`
+- Сохраняется в `exchanger_bot_users/{userId}`
 - Это позволяет отправлять уведомления по username
 
 ```typescript
@@ -80,7 +80,7 @@ if (user?.id) {
 ```
 
 **Логика:**
-- Ищет `chatId` по username в Firebase (`telegramUsers/`)
+- Ищет `chatId` по username в Firebase (`exchanger_bot_users/`)
 - Если не найден - пропускает отправку (пользователь еще не открывал бота)
 - Отправляет сообщение с inline кнопками
 - Возвращает `messageId` и `chatId` для сохранения в транзакции
@@ -301,7 +301,7 @@ curl -X POST "https://api.telegram.org/bot<BOT_TOKEN>/deleteWebhook"
 ### Структура пользователей Telegram
 ```json
 {
-  "telegramUsers": {
+  "exchanger_bot_users": {
     "123456789": {
       "id": 123456789,
       "username": "username",

@@ -225,8 +225,16 @@ const uids = {
 };
 
 onMounted(() => {
+  // Загружаем время истечения: сначала из транзакции (приоритет), потом из localStorage
   if (!time.value) {
-    time.value = window.localStorage.getItem("expTime");
+    if (activeTransaction.value?.expirationTime) {
+      time.value = new Date(activeTransaction.value.expirationTime);
+    } else {
+      const cachedTime = window.localStorage.getItem("expTime");
+      if (cachedTime) {
+        time.value = new Date(cachedTime);
+      }
+    }
   }
 
   if (activeTransaction.value?.status === "payed") {
@@ -244,12 +252,36 @@ onMounted(() => {
 });
 
 watch(valueTransaction, async (val) => {
-  if (val.status === "payed") {
+  if (!val) return;
+  
+  const currentStatus = activeTransaction.value!.status;
+  const newStatus = val.status;
+  
+  // Если статус не изменился, ничего не делаем
+  if (currentStatus === newStatus) return;
+  
+  console.log(`[TransactionBlock] Статус изменен: ${currentStatus} -> ${newStatus}`);
+  
+  // Обрабатываем изменение статуса на "done" (оплачено пользователем/через бота)
+  if (newStatus === "done") {
+    activeTransaction.value!.status = "done";
+  }
+  
+  // Обрабатываем изменение статуса на "rejected" (отменено через бота)
+  if (newStatus === "rejected") {
+    activeTransaction.value!.status = "rejected";
+    window.localStorage.removeItem("transaction");
+    window.localStorage.removeItem("expTime");
+  }
+  
+  // Обрабатываем изменение статуса на "payed" (обработан админом)
+  if (newStatus === "payed") {
     activeTransaction.value!.status = "payed";
     window.localStorage.removeItem("transaction");
+    window.localStorage.removeItem("expTime");
 
     // Отправляем Telegram уведомление о выполнении заявки
-    if (!process.dev && activeTransaction.value?.key) {
+    if (activeTransaction.value?.key) {
       await updateOrderStatus(
         { ...activeTransaction.value, status: "payed" },
         activeTransaction.value.key
@@ -305,7 +337,7 @@ const cancel = async (status: "rejected" | "timeout" | "done") => {
   }
 
   // Отправляем Telegram уведомление об изменении статуса
-  if (!process.dev && activeTransaction.value?.key) {
+  if (activeTransaction.value?.key) {
     await updateOrderStatus(
       { ...activeTransaction.value, status },
       activeTransaction.value.key

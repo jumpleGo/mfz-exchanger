@@ -90,4 +90,52 @@ export class Getter {
       throw error
     }
   }
+
+  /**
+   * Получить последнюю активную транзакцию пользователя по telegram username
+   * Активные статусы: created, done
+   */
+  static async getActiveUserTransaction(
+    databaseRef: DatabaseReference,
+    telegramUsername: string
+  ): Promise<{ transaction: any; key: string } | null> {
+    try {
+      const request = query(
+        child(databaseRef, 'transactions'),
+        orderByChild('telegram'),
+        equalTo(telegramUsername)
+      )
+      const snapshot = await get(request)
+      
+      if (!snapshot.exists()) {
+        return null
+      }
+
+      const transactions = snapshot.val()
+      
+      // Фильтруем только активные транзакции (created или done)
+      const activeTransactions = Object.entries(transactions)
+        .map(([key, transaction]: [string, any]) => ({ key, transaction }))
+        .filter(({ transaction }) => 
+          transaction.status === 'created' || transaction.status === 'done'
+        )
+
+      if (activeTransactions.length === 0) {
+        return null
+      }
+
+      // Сортируем по id (timestamp) и берем последнюю
+      const latestTransaction = activeTransactions.sort(
+        (a, b) => b.transaction.id - a.transaction.id
+      )[0]
+
+      return {
+        transaction: latestTransaction.transaction,
+        key: latestTransaction.key
+      }
+    } catch (error) {
+      console.error(`Error getting active transaction for ${telegramUsername}:`, error)
+      throw error
+    }
+  }
 }

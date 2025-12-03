@@ -45,7 +45,7 @@ export default defineEventHandler(async (event) => {
       const { databaseRef } = useServerDatabase()
       const { child, get } = await import('firebase/database')
       
-      const usersSnapshot = await get(child(databaseRef, 'telegramUsers/'))
+      const usersSnapshot = await get(child(databaseRef, 'exchanger_bot_users/'))
       if (usersSnapshot.exists()) {
         const users = usersSnapshot.val()
         const userEntry = Object.entries(users).find(
@@ -164,7 +164,7 @@ function getKeyboard(transaction: IActiveTransaction, key: string, siteUrl: stri
         [
           {
             text: '📱 Открыть заявку',
-            url: `https://t.me/${botUsername}/app?startapp=order_${key}`
+            web_app: { url: siteUrl }
           }
         ]
       ]
@@ -175,7 +175,7 @@ function getKeyboard(transaction: IActiveTransaction, key: string, siteUrl: stri
         [
           {
             text: '📱 Открыть заявку',
-            url: `https://t.me/${botUsername}/app?startapp=order_${key}`
+            web_app: { url: siteUrl }
           }
         ]
       ]
@@ -186,7 +186,7 @@ function getKeyboard(transaction: IActiveTransaction, key: string, siteUrl: stri
         [
           {
             text: '📱 Открыть заявку',
-            url: `https://t.me/${botUsername}/app?startapp=order_${key}`
+            web_app: { url: siteUrl }
           }
         ]
       ]

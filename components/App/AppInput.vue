@@ -31,6 +31,7 @@
           { error: error },
           { '--valid': valid },
           { '--success': valid },
+          { '--disabled': disabled },
         ]"
         @blur="emit('blur')"
         autocomplete="off"
@@ -117,9 +118,12 @@ const clearAddress = async () => {
   outline: unset;
   border: 1px solid rgba(255, 188, 14, 0.76);
   background: rgba(255, 213, 103, 0.28);
+  user-select: text;
+  -webkit-user-select: text;
 
   @include mobile-all {
     font-size: 14px;
+    padding: 8px 12px;
   }
 }
 .--valid {
@@ -147,7 +151,8 @@ const clearAddress = async () => {
   &__label {
     margin-bottom: 8px;
     @include mobile-all {
-      font-size: 14px;
+      font-size: 13px;
+      margin-bottom: 6px;
     }
   }
   &__paste {
@@ -160,7 +165,9 @@ const clearAddress = async () => {
     }
 
     @include mobile-all {
-      font-size: 12px;
+      font-size: 11px;
+      bottom: 10px;
+      right: 12px;
     }
   }
   &__label-wrapper {
@@ -176,8 +183,20 @@ const clearAddress = async () => {
     outline: unset;
     border: 1px solid $brand_yellow;
     width: 100%;
+    user-select: text;
+    -webkit-user-select: text;
+    caret-color: #333;
+    transition: all 0.2s ease;
+    box-shadow: 0 0 0 3px transparent;
+    
+    &:focus {
+      box-shadow: 0 0 0 3px rgba(255, 188, 14, 0.2);
+    }
+    
     @include mobile-all {
-      font-size: 16px;
+      font-size: 14px;
+      padding: 8px 12px;
+
     }
   }
 }
@@ -188,12 +207,18 @@ const clearAddress = async () => {
 .--success {
   border: 1px solid rgba(0, 122, 2, 0.76);
 }
+.--disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background-color: #f5f5f5;
+  color: #999;
+}
 .slots {
   display: flex;
   align-items: center;
   justify-content: space-between;
   @include mobile-all {
-    font-size: 12px;
+    font-size: 11px;
   }
 }
 .slot {
@@ -203,7 +228,7 @@ const clearAddress = async () => {
   font-size: 13px;
   color: $error;
   @include mobile-all {
-    font-size: 12px;
+    font-size: 11px;
   }
 }
 </style>

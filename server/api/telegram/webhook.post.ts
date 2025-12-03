@@ -103,11 +103,11 @@ async function handleMessage(message: any) {
     }
     
     const updates: Record<string, any> = {}
-    updates[`telegramUsers/${from.id}`] = userData
+    updates[`exchanger_bot_users/${from.id}`] = userData
     
     await update(databaseRef, updates)
     
-    console.log('[Telegram Webhook] User registered:', from.username)
+    console.log('[Telegram Webhook] User registered to exchanger_bot_users:', from.username)
   }
 }
 

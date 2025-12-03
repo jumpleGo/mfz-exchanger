@@ -16,7 +16,7 @@
         :reason="exchangerSettings.disableSiteReason"
       />
     </ClientOnly>
-    <AppLoader v-if="loading" />
+      <AppLoader v-if="loading" />
     <NotificationBlock
       class="exchanger__notification-block"
       v-if="
@@ -39,13 +39,6 @@
       class="exchanger"
     >
       <div v-if="!isLoadingResize" class="exchanger__content">
-        <div
-          v-if="exchangerSettings.showOffer"
-          class="exchanger__content--icon"
-          @click="showModal = true"
-        >
-          🎁
-        </div>
         <LeftExchangerBlock
           v-if="showLeftBlock"
           :class="[
@@ -118,7 +111,6 @@ const {
 } = storeToRefs(useExchangerStore());
 const hideRightBlock = shallowRef(true);
 const { isMobile, isLoadingResize } = useResponsive();
-const { showModal } = storeToRefs(useMainStore());
 
 definePageMeta({
   layout: "exchanger",
@@ -142,50 +134,53 @@ useHead({
 const showError = shallowRef(false);
 const showNotification = shallowRef(false);
 const showHightLoad = shallowRef(false);
+const loading = shallowRef(true);
+const modalsData = shallowRef<any[]>([]);
 
-const { data, refresh, status } = await useAsyncData('exchanger-init', async () => {
+const initExchanger = async () => {
   try {
+    loading.value = true;
     const response = await $fetch('/api/exchanger/init');
-    
+
     // Устанавливаем данные из серверного ответа
     exchangerSettings.value = response.exchangerSettings;
     vats.value = response.vats;
     vatsInitial.value = JSON.parse(JSON.stringify(response.vats));
     minmaxLimit.value = response.minmaxLimit;
-    
+
     // Если сайт отключен, останавливаемся
     if (response.isSiteDisabled) {
-      return { modals: response.modals };
+      modalsData.value = response.modals || [];
+      loading.value = false;
+      return;
     }
-    
+
     // Устанавливаем цены и статусы
     pricesList.value = response.pricesList;
     priceUsd.value = response.priceUsd;
     showError.value = response.hasError;
     showHightLoad.value = response.showHighLoad;
-    
+
     // Показываем уведомление если включено
     if (exchangerSettings.value?.isNotificationEnable) {
       showNotification.value = true;
     }
-    
-    return { modals: response.modals };
+
+    modalsData.value = response.modals || [];
   } catch (error) {
     console.error('Failed to initialize exchanger:', error);
     showError.value = true;
-    return { modals: [] };
+  } finally {
+    loading.value = false;
   }
-});
-
-// Привязываем loading к status из useAsyncData
-const loading = computed(() => status.value === 'pending');
+};
 
 onMounted(() => {
-  if (status.value === "error") refresh();
+  initExchanger();
 });
 
 const modalsArray = computed(() => {
-  return data.value?.modals.map((modal: ModalConfig) => {
+  return modalsData.value.map((modal: ModalConfig) => {
     return useModal({
       thumbnail: modal.thumbnail,
       title: modal.title,
@@ -289,6 +284,38 @@ const backToPair = () => {
 @keyframes boxShadowAnim {
   50% {
     box-shadow: 0 0 30px $brand_yellow;
+  }
+}
+
+.loader-fallback {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+
+  &__logo {
+    width: 60px;
+    height: 60px;
+    border: 4px solid rgba(240, 189, 69, 0.2);
+    border-top-color: #f0bd45;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
   }
 }
 

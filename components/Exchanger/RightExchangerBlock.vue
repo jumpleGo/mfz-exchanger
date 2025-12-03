@@ -202,7 +202,7 @@ import { checkTonAddress, checkTronAddress } from "~/api/checkAddress";
 
 const { sendOrderCreated } = useTelegramOrderNotifications();
 const { getTelegramUserData } = useTelegramAuth();
-const { isTelegramBrowser } = useTelegramWebApp();
+const { isTelegramBrowser, isTelegramReady } = useTelegramWebApp();
 import { useGetter } from "~/composables/useGetter";
 
 const emit = defineEmits<{
@@ -899,22 +899,26 @@ watch(
     }
   },
 );
+// Автозаполнение telegram поля когда SDK готов
+watch(isTelegramReady, (isReady) => {
+  if (isReady && isTelegramBrowser.value && !model.telegram) {
+    const telegramUser = getTelegramUserData();
+    if (telegramUser?.username) {
+      model.telegram = telegramUser.username;
+      console.log('[Exchanger] Auto-filled telegram username:', telegramUser.username);
+    } else if (telegramUser?.first_name) {
+      // Если нет username, используем first_name (без пробелов)
+      model.telegram = telegramUser.first_name.replace(/\s+/g, '');
+      console.log('[Exchanger] Auto-filled telegram first_name:', telegramUser.first_name);
+    }
+  }
+}, { immediate: true });
+
 onMounted(() => {
   calculateFactor(calculateAmount.value);
   receivedAmountInput.value = formatWithSpaces(
     calculateAmount.value.toString(),
   );
-
-  // Автозаполнение telegram поля если открыто в Telegram Mini App
-  if (isTelegramBrowser.value) {
-    const telegramUser = getTelegramUserData();
-    if (telegramUser?.username) {
-      model.telegram = telegramUser.username;
-    } else if (telegramUser?.first_name) {
-      // Если нет username, используем first_name (без пробелов)
-      model.telegram = telegramUser.first_name.replace(/\s+/g, '');
-    }
-  }
 });
 
 /**
@@ -939,14 +943,13 @@ const validateForm = async () => {
  */
 const sendForm = async () => {
   const payload = createPayload();
-  const expirationTime = calculateExpirationTime();
 
   try {
     const transactionRef = await Setter.pushToDb("transactions", payload);
     const transactionKey = transactionRef.key;
 
     if (transactionKey) {
-      handleTransactionSuccess(transactionRef, payload, expirationTime);
+      handleTransactionSuccess(transactionRef, payload);
 
       if (promoApplied.value) {
         await Setter.updateToDb({
@@ -954,7 +957,6 @@ const sendForm = async () => {
         });
       }
 
-      if (!process.dev) {
         sendNotification(payload);
         
         const telegramResponse = await sendOrderCreated(payload, transactionKey);
@@ -965,7 +967,7 @@ const sendForm = async () => {
             [`transactions/${transactionKey}/telegramChatId`]: telegramResponse.chatId,
           });
         }
-      }
+
     }
   } catch (err) {
     console.error("Ошибка при отправке формы:", err);
@@ -976,21 +978,25 @@ const sendForm = async () => {
  * Создание объекта транзакции для отправки в базу данных
  * @returns {IActiveTransaction} Объект с данными транзакции
  */
-const createPayload = (): IActiveTransaction => ({
-  sell: selectedSell.value?.key,
-  buy: selectedBuy.value?.key,
-  countSell: model.count,
-  countBuy: calculateAmount.value,
-  address: model.address,
-  id: +new Date(),
-  factor: factor.value,
-  net: model.net,
-  telegram: model.telegram.startsWith("@")
-    ? model.telegram.slice(1)
-    : model.telegram,
-  status: "created",
-  promocode: promocode.value,
-});
+const createPayload = (): IActiveTransaction => {
+  const expirationTime = calculateExpirationTime();
+  return {
+    sell: selectedSell.value?.key,
+    buy: selectedBuy.value?.key,
+    countSell: model.count,
+    countBuy: calculateAmount.value,
+    address: model.address,
+    id: +new Date(),
+    factor: factor.value,
+    net: model.net,
+    telegram: model.telegram.startsWith("@")
+      ? model.telegram.slice(1)
+      : model.telegram,
+    status: "created",
+    promocode: promocode.value,
+    expirationTime: expirationTime.toString(),
+  };
+};
 
 /**
  * Применение промокода
@@ -1081,17 +1087,19 @@ const resetVats = () => {
 const handleTransactionSuccess = (
   data: Record<string, any>,
   payload: IActiveTransaction,
-  expirationTime: Date,
 ) => {
   const transactionData = {
     ...payload,
     key: data.key,
   };
 
+  // Сохраняем в localStorage как кэш
   window.localStorage.setItem("transaction", JSON.stringify(transactionData));
-  window.localStorage.setItem("expTime", expirationTime.toString());
+  if (payload.expirationTime) {
+    window.localStorage.setItem("expTime", payload.expirationTime);
+    time.value = new Date(payload.expirationTime);
+  }
 
-  time.value = expirationTime;
   activeTransaction.value = transactionData;
 };
 </script>

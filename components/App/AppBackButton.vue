@@ -23,6 +23,16 @@
     opacity: 1;
     transform: scale(1.05);
   }
+
+  @include mobile-all {
+    padding: 8px;
+    border-radius: 8px;
+
+    img {
+      width: 16px;
+      height: 16px;
+    }
+  }
 }
 </style>
 <script setup lang="ts">

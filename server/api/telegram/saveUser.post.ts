@@ -14,7 +14,7 @@ export default defineEventHandler(async (event) => {
     const { update } = await import('firebase/database')
 
     const updates: Record<string, any> = {}
-    updates[`telegramUsers/${telegramUser.id}`] = {
+    updates[`exchanger_bot_users/${telegramUser.id}`] = {
       id: telegramUser.id,
       username: telegramUser.username,
       first_name: telegramUser.first_name,
@@ -25,7 +25,7 @@ export default defineEventHandler(async (event) => {
 
     await update(databaseRef, updates)
 
-    console.log('[Telegram] User saved:', telegramUser.username || telegramUser.id)
+    console.log('[Telegram] User saved to exchanger_bot_users:', telegramUser.username || telegramUser.id)
 
     return {
       success: true,

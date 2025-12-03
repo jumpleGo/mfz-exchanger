@@ -89,6 +89,11 @@ watch(isOpenList, async (isOpen) => {
     z-index: 2;
     max-height: 300px;
     overflow-y: auto;
+
+    @include mobile-all {
+      top: 37px;
+      max-height: 250px;
+    }
   }
 
   &__item {
@@ -108,6 +113,11 @@ watch(isOpenList, async (isOpen) => {
       border: 1px solid $brand_yellow;
       background: rgb(255, 240, 199);
     }
+
+    @include mobile-all {
+      font-size: 14px;
+      padding: 8px 15px;
+    }
   }
 
   &__icon {
@@ -118,6 +128,12 @@ watch(isOpenList, async (isOpen) => {
     top: 12px;
     transform: rotate(0deg);
     transition: 0.2s;
+
+    @include mobile-all {
+      right: 15px;
+      height: 16px;
+      top: 10px;
+    }
   }
 
   .--active {
@@ -149,6 +165,11 @@ watch(isOpenList, async (isOpen) => {
 
   &:hover {
     cursor: pointer;
+  }
+
+  @include mobile-all {
+    font-size: 14px;
+    padding: 8px 12px;
   }
 }
 

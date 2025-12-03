@@ -19,5 +19,8 @@ export const useGetter = () => {
     
     getByValue: <T = unknown>(path: string, key: string, value: string) => 
       Getter.getByValue<T>($databaseRef, path, key, value),
+    
+    getActiveUserTransaction: (telegramUsername: string) => 
+      Getter.getActiveUserTransaction($databaseRef, telegramUsername),
   }
 }

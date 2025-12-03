@@ -18,6 +18,7 @@
     min-height: calc(100vh - 150px);
     height: 100%;
     flex: unset;
+    padding: 30px 0;
   }
 
   @include mobile-xs {
@@ -25,7 +26,7 @@
     min-height: 90vh;
     height: 100%;
     flex: unset;
-    padding: 30px 0;
+    padding: 20px 0;
   }
 
   h2, h3, h4  {
@@ -44,12 +45,16 @@
 }
 .exchanger__left {
   @include mobile-all {
-    padding: 60px 0 30px 0;
+    padding: 40px 0 20px 0;
   }
 }
 .exchanger__right {
   flex-direction: column;
   justify-content: unset;
+  
+  @include mobile-all {
+    padding: 30px 0 20px 0;
+  }
 }
 
 .--disabled-block {
@@ -82,7 +87,7 @@
   }
 
   @include mobile-all {
-    font-size: 18px;
+    font-size: 16px;
   }
 
 }
@@ -98,5 +103,6 @@
     justify-content: unset;
     flex-direction: column;
     align-items: center;
+    gap: 4px;
   }
 }

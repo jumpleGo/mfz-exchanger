@@ -139,7 +139,7 @@ function getKeyboard(transaction: IActiveTransaction, key: string, siteUrl: stri
         [
           {
             text: '📱 Открыть заявку',
-            url: `https://t.me/${botUsername}/app?startapp=order_${key}`
+            web_app: { url: siteUrl }
           }
         ]
       ]
@@ -150,7 +150,7 @@ function getKeyboard(transaction: IActiveTransaction, key: string, siteUrl: stri
         [
           {
             text: '📱 Открыть заявку',
-            url: `https://t.me/${botUsername}/app?startapp=order_${key}`
+            web_app: { url: siteUrl }
           }
         ]
       ]
@@ -161,7 +161,7 @@ function getKeyboard(transaction: IActiveTransaction, key: string, siteUrl: stri
         [
           {
             text: '📱 Открыть заявку',
-            url: `https://t.me/${botUsername}/app?startapp=order_${key}`
+            web_app: { url: siteUrl }
           }
         ]
       ]
