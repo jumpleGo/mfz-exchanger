@@ -12,6 +12,22 @@ RUN npm ci
 # Копируем остальные файлы
 COPY . .
 
+# Build-time переменные для публичных env
+ARG NUXT_databaseURL
+ARG NUXT_ASSETS_IMAGE_BUCKET
+ARG NUXT_SITE_URL
+ARG NUXT_TELEGRAM_BOT_USERNAME
+
+# Runtime переменная для приватного токена
+ARG NUXT_TELEGRAM_BOT_TOKEN
+
+# Устанавливаем переменные для билда
+ENV NUXT_databaseURL=$NUXT_databaseURL
+ENV NUXT_ASSETS_IMAGE_BUCKET=$NUXT_ASSETS_IMAGE_BUCKET
+ENV NUXT_SITE_URL=$NUXT_SITE_URL
+ENV NUXT_TELEGRAM_BOT_USERNAME=$NUXT_TELEGRAM_BOT_USERNAME
+ENV NUXT_TELEGRAM_BOT_TOKEN=$NUXT_TELEGRAM_BOT_TOKEN
+
 # Сборка приложения
 RUN npm run build
 
