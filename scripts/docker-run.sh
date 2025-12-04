@@ -28,9 +28,18 @@ if [ "$(docker ps -aq -f name=$CONTAINER_NAME)" ]; then
     docker rm $CONTAINER_NAME
 fi
 
-# Сборка образа
-echo -e "${YELLOW}Сборка Docker образа...${NC}"
-docker build -t $IMAGE_NAME .
+# Загрузка переменных из .env
+source .env
+
+# Сборка образа с build args
+echo -e "${YELLOW}Сборка Docker образа с build args...${NC}"
+docker build \
+  --build-arg NUXT_databaseURL="$NUXT_databaseURL" \
+  --build-arg NUXT_ASSETS_IMAGE_BUCKET="$NUXT_ASSETS_IMAGE_BUCKET" \
+  --build-arg NUXT_SITE_URL="$NUXT_SITE_URL" \
+  --build-arg NUXT_TELEGRAM_BOT_USERNAME="$NUXT_TELEGRAM_BOT_USERNAME" \
+  --build-arg NUXT_TELEGRAM_BOT_TOKEN="$NUXT_TELEGRAM_BOT_TOKEN" \
+  -t $IMAGE_NAME .
 
 if [ $? -eq 0 ]; then
     echo -e "${GREEN}✓ Образ успешно собран${NC}\n"
@@ -44,7 +53,7 @@ echo -e "${YELLOW}Запуск контейнера...${NC}"
 docker run -d \
   --name $CONTAINER_NAME \
   -p $PORT:3000 \
-  --env-file .env \
+  -e NUXT_TELEGRAM_BOT_TOKEN="$NUXT_TELEGRAM_BOT_TOKEN" \
   --restart unless-stopped \
   $IMAGE_NAME
 
