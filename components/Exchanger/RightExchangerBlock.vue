@@ -225,6 +225,7 @@ const {
   isSelectedBothItem,
   vatsInitial,
   activeTransaction,
+  isValuteForSell
 } = storeToRefs(useExchangerStore());
 
 /**
@@ -757,28 +758,56 @@ const updateReceivedAmount = (value: string) => {
 
     if (isCryptoForSell.value) {
       // Продаем крипту → получаем рубли: receivedValue это рубли
-      // Пересчитываем factor на основе суммы в рублях (для динамической комиссии)
-      calculateFactor(receivedValue);
+      // Пересчитываем factor на основе суммы в рублях с использованием базовой цены
+      // Сначала делаем первое приближение для определения примерного количества крипты
+      const preliminaryCount = receivedValue / (prices.value[selectedSell.value?.key as CryptoKeys] || 1);
+      model.count = preliminaryCount;
+      
+      // Теперь рассчитываем factor с использованием базовой цены
+      calculateFactor(receivedValue, true);
 
-      // Теперь пересчитываем model.count с ОБНОВЛЕННЫМ factor
+      // Пересчитываем model.count с ОБНОВЛЕННЫМ factor
       const vatValue = withVat.value[keyForVat] || 1;
       model.count = +(receivedValue / vatValue).toFixed(
         selectedSell.value?.key === "btc" ? 6 : 2,
       );
     } else {
       // Покупаем крипту → отдаем рубли
-      // Нужна итерация для точного расчета (factor зависит от rubAmount, rubAmount зависит от factor)
+      // Для валютной пары RUB → USDT (isValuteForSell = true)
+      
+      if (isValuteForSell.value) {
+        // Продаем RUB для покупки крипты
+        // Базовая сумма RUB = количество крипты * цена
+        const cryptoPrice = prices.value[selectedBuy.value?.key as CryptoKeys] || 1;
+        const baseRubAmount = receivedValue * cryptoPrice;
+        
+        // Итерационный подход для правильного определения комиссии
+        // Первая итерация: предварительный расчет
+        calculateFactor(baseRubAmount, false);
+        let vatValue = withVat.value[keyForVat] || 1;
+        let estimatedRub = receivedValue * vatValue;
+        
+        // Вторая итерация: пересчет factor на основе оценки
+        calculateFactor(estimatedRub, false);
+        
+        // Финальный расчет с обновленным factor
+        vatValue = withVat.value[keyForVat] || 1;
+        model.count = +(receivedValue * vatValue).toFixed(2);
+      } else {
+        // Обычная покупка крипты (не из валютной пары)
+        // Нужна итерация для точного расчета
+        
+        // Первое приближение: рассчитываем примерную сумму в рублях
+        let vatValue = withVat.value[keyForVat] || 1;
+        let rubAmount = +(receivedValue * vatValue).toFixed(2);
 
-      // Первое приближение: рассчитываем примерную сумму в рублях
-      let vatValue = withVat.value[keyForVat] || 1;
-      let rubAmount = +(receivedValue * vatValue).toFixed(2);
+        // Пересчитываем factor на основе первого приближения
+        calculateFactor(rubAmount, false);
 
-      // Пересчитываем factor на основе первого приближения
-      calculateFactor(rubAmount);
-
-      // Второе приближение с обновленным factor
-      vatValue = withVat.value[keyForVat] || 1;
-      model.count = +(receivedValue * vatValue).toFixed(2);
+        // Второе приближение с обновленным factor
+        vatValue = withVat.value[keyForVat] || 1;
+        model.count = +(receivedValue * vatValue).toFixed(2);
+      }
     }
   }
 
@@ -824,9 +853,14 @@ watch(
     }
     promoApplied.value && resetVats();
     if (isCryptoForSell.value) {
-      calculateFactor(calculateAmount.value);
+      // Продаем крипту: используем базовую цену для корректного расчета порога
+      calculateFactor(calculateAmount.value, true);
+    } else if (isValuteForSell.value) {
+      // Продаем валюту (RUB) для покупки крипты: порог определяется по сумме RUB
+      calculateFactor(model.count, false);
     } else {
-      calculateFactor(model.count);
+      // Обычная покупка крипты: передаем рубли напрямую
+      calculateFactor(model.count, false);
     }
 
     // Обновляем второй инпут только если изменение не пришло от него самого
@@ -915,7 +949,8 @@ watch(isTelegramReady, (isReady) => {
 }, { immediate: true });
 
 onMounted(() => {
-  calculateFactor(calculateAmount.value);
+  // При инициализации используем базовую цену для корректного расчета
+  calculateFactor(calculateAmount.value, isCryptoForSell.value);
   receivedAmountInput.value = formatWithSpaces(
     calculateAmount.value.toString(),
   );
@@ -1053,7 +1088,8 @@ const usePromo = () => {
   vats.value[sellValute].VAT_BIG = promocodeSettings.value.vat;
   vats.value[sellValute].VAT_SMALL = promocodeSettings.value.vat;
 
-  calculateFactor(calculateAmount.value);
+  // При применении промокода пересчитываем с базовой ценой
+  calculateFactor(calculateAmount.value, isCryptoForSell.value);
 
   // Обновляем поле "Вы получите" после применения промокода
   nextTick(() => {
@@ -1075,7 +1111,8 @@ const resetVats = () => {
   const [sellValute] = promocodeSettings.value.pair.split("/");
   vats.value[sellValute].VAT_BIG = vatsInitial.value[sellValute].VAT_BIG;
   vats.value[sellValute].VAT_SMALL = vatsInitial.value[sellValute].VAT_SMALL;
-  calculateFactor(calculateAmount.value);
+  // При сбросе промокода пересчитываем с базовой ценой
+  calculateFactor(calculateAmount.value, isCryptoForSell.value);
 };
 /**
  * Обработка успешного создания транзакции
