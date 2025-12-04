@@ -5,11 +5,9 @@ RUN apk add --no-cache libc6-compat
 
 WORKDIR /app
 
-# Копируем package.json и package-lock.json
-COPY package*.json ./
 
 # Установка зависимостей
-RUN npm ci
+RUN npm i --force
 
 # Копируем остальные файлы
 COPY . .
