@@ -82,12 +82,12 @@ export default defineNuxtConfig({
   ],
 
   runtimeConfig: {
-    TELEGRAM_BOT_TOKEN: process.env.TELEGRAM_BOT_TOKEN,
+    TELEGRAM_BOT_TOKEN: process.env.NUXT_TELEGRAM_BOT_TOKEN,
     public: {
-      databaseURL: process.env.databaseURL,
-      ASSETS_IMAGE_BUCKET: process.env.ASSETS_IMAGE_BUCKET,
-      SITE_URL: process.env.SITE_URL,
-      TELEGRAM_BOT_USERNAME: process.env.TELEGRAM_BOT_USERNAME,
+      databaseURL: process.env.NUXT_databaseURL,
+      ASSETS_IMAGE_BUCKET: process.env.NUXT_ASSETS_IMAGE_BUCKET,
+      SITE_URL: process.env.NUXT_SITE_URL,
+      TELEGRAM_BOT_USERNAME: process.env.NUXT_TELEGRAM_BOT_USERNAME,
     },
   },
 
