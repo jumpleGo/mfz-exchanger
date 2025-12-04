@@ -150,7 +150,7 @@ function getStatusText(status: string): string {
 }
 
 function getKeyboard(transaction: IActiveTransaction, key: string, siteUrl: string) {
-  const botUsername = process.env.TELEGRAM_BOT_USERNAME || ''
+  const botUsername = process.env.NUXT_TELEGRAM_BOT_USERNAME || ''
   
   if (transaction.status === 'created') {
     return {

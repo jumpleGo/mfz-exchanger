@@ -5,7 +5,7 @@ import { getDatabase } from 'firebase/database'
 export const useServerDatabase = () => {
   const apps = getApps()
   const app = apps.length ? apps[0] : initializeApp({
-    databaseURL: process.env.databaseURL
+    databaseURL: process.env.NUXT_databaseURL
   })
 
   return {
