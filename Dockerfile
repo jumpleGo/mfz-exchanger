@@ -7,7 +7,7 @@ WORKDIR /app
 
 
 # Установка зависимостей
-RUN npm i --force
+RUN npm ci
 
 # Копируем остальные файлы
 COPY . .
