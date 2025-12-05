@@ -21,6 +21,7 @@ export const useExchangerStore = defineStore("exchanger", () => {
   const minmaxLimit = ref();
   const pricesList = ref<ISymbolPrice[]>([]);
   const priceUsd = ref<number>(0);
+  const loading = ref<boolean>(true);
 
   const clearSelected = () => {
     selectedSell.value = {};
@@ -173,5 +174,6 @@ export const useExchangerStore = defineStore("exchanger", () => {
     isUSDTBuy,
     isBTCBuy,
     isZeroAmountStarts,
+    loading,
   };
 });

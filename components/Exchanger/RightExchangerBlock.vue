@@ -102,7 +102,7 @@
             :options="usdtNet"
           />
           <span v-if="isNetShow" class="tip">(комиссия оплачивается вами)</span>
-          <div class="exchanger__promocode">
+          <div v-if="!isFreezeActive" class="exchanger__promocode">
             <div class="exchanger__inputs__promocode-wrapper">
               <AppInput
                 v-model="promocode"
@@ -204,10 +204,23 @@ const { sendOrderCreated } = useTelegramOrderNotifications();
 const { getTelegramUserData } = useTelegramAuth();
 const { isTelegramBrowser, isTelegramReady } = useTelegramWebApp();
 import { useGetter } from "~/composables/useGetter";
+import {useFreezePromotion} from "~/composables/gamification/useFreezePromotion";
+import {useFreezeAnalytics} from "~/composables/gamification/useFreezeAnalytics";
 
 const emit = defineEmits<{
   (e: "back"): void;
 }>();
+
+const isFreezeActive = computed(() => {
+  if (process.client) {
+    try {
+      return useFreezePromotion().isFreezed.value;
+    } catch (e) {
+      return false;
+    }
+  }
+  return false;
+});
 
 const {
   vats,
@@ -992,6 +1005,16 @@ const sendForm = async () => {
         });
       }
 
+      if (isFreezeActive.value && process.client) {
+        try {
+          const { trackExchangeWithFreeze } = useFreezeAnalytics();
+          const pair = `${selectedSell.value?.key}/${selectedBuy.value?.key}`;
+          trackExchangeWithFreeze(pair, model.count);
+        } catch (e) {
+          console.log('[Freeze] Analytics tracking failed:', e);
+        }
+      }
+
         sendNotification(payload);
         
         const telegramResponse = await sendOrderCreated(payload, transactionKey);
@@ -1030,6 +1053,7 @@ const createPayload = (): IActiveTransaction => {
     status: "created",
     promocode: promocode.value,
     expirationTime: expirationTime.toString(),
+    freeze: isFreezeActive.value || false,
   };
 };
 

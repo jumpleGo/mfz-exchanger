@@ -25,7 +25,8 @@ export type IActiveTransaction = {
   expirationTime?: string,
   promocode?: string,
   telegramMessageId?: number,
-  telegramChatId?: number
+  telegramChatId?: number,
+  freeze?: boolean
 }
 
 export interface IAdmin {key: string, privileges: string}

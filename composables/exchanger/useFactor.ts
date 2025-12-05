@@ -1,5 +1,6 @@
 import { storeToRefs } from "pinia";
 import type { IModel } from "~/components/Exchanger/types";
+import {useFreezePromotion} from "~/composables/gamification/useFreezePromotion";
 
 export const useFactor = (model: IModel) => {
   // В тестах используем глобальный мок, в продакшене - реальный store
@@ -13,12 +14,34 @@ export const useFactor = (model: IModel) => {
   };
   const factor = ref<number>(1);
 
+  const getFreezePromotion = () => {
+    if (process.client) {
+      try {
+        return useFreezePromotion();
+      } catch (e) {
+        return null;
+      }
+    }
+    return null;
+  };
+
   /**
    * Рассчитывает factor на основе суммы
    * @param calculateAmount - сумма в рублях для определения порога комиссии
    * @param useBasePrice - если true, использовать базовую цену без комиссии для расчета порога
    */
   const calculateFactor = (calculateAmount: number, useBasePrice: boolean = false) => {
+    const freezePromotion = getFreezePromotion();
+    
+    if (freezePromotion?.isFreezed.value) {
+      const freezeCommission = freezePromotion.commission.value;
+      if (isValuteForSell.value) {
+        factor.value = 1 + (freezeCommission / 100);
+      } else {
+        factor.value = 1 - (freezeCommission / 100);
+      }
+      return;
+    }
     if (isValuteForSell.value) {
       const { VAT_BIG = 1, VAT_SMALL = 1 } =
         vats.value?.[selectedBuy.value?.key] || defaultValue;

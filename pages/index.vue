@@ -1,5 +1,6 @@
 <template>
   <div class="exchanger__wrapper">
+    <GamificationFreezeWrapper v-if="!loading && !showError" />
     <ClientOnly>
       <ErrorNotification v-if="showError && !loading" />
       <HighLoadNotification
@@ -108,6 +109,7 @@ const {
   pricesList,
   priceUsd,
   minmaxLimit,
+  loading,
 } = storeToRefs(useExchangerStore());
 const hideRightBlock = shallowRef(true);
 const { isMobile, isLoadingResize } = useResponsive();
@@ -134,7 +136,6 @@ useHead({
 const showError = shallowRef(false);
 const showNotification = shallowRef(false);
 const showHightLoad = shallowRef(false);
-const loading = shallowRef(true);
 const modalsData = shallowRef<any[]>([]);
 
 const initExchanger = async () => {
@@ -175,7 +176,7 @@ const initExchanger = async () => {
   }
 };
 
-onMounted(() => {
+onBeforeMount(() => {
   initExchanger();
 });
 
