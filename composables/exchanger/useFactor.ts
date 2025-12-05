@@ -13,6 +13,8 @@ export const useFactor = (model: IModel) => {
     VAT_SMALL: 1,
   };
   const factor = ref<number>(1);
+  const lastCalculateAmount = ref<number>(0);
+  const lastUseBasePrice = ref<boolean>(false);
 
   const getFreezePromotion = () => {
     if (process.client) {
@@ -31,6 +33,10 @@ export const useFactor = (model: IModel) => {
    * @param useBasePrice - если true, использовать базовую цену без комиссии для расчета порога
    */
   const calculateFactor = (calculateAmount: number, useBasePrice: boolean = false) => {
+    // Сохраняем параметры для возможного пересчета
+    lastCalculateAmount.value = calculateAmount;
+    lastUseBasePrice.value = useBasePrice;
+    
     const freezePromotion = getFreezePromotion();
     
     if (freezePromotion?.isFreezed.value) {
@@ -78,6 +84,20 @@ export const useFactor = (model: IModel) => {
         1 - (thresholdAmount < 10000 ? VAT_BIG / 100 : VAT_SMALL / 100);
     }
   };
+
+  // Автоматически пересчитываем комиссию при изменении freeze статуса
+  if (process.client) {
+    const freezePromotion = getFreezePromotion();
+    if (freezePromotion) {
+      watch(() => freezePromotion.isFreezed.value, (newValue, oldValue) => {
+        // Пересчитываем только если freeze деактивировался и есть сохраненные параметры
+        if (oldValue && !newValue && lastCalculateAmount.value > 0) {
+          calculateFactor(lastCalculateAmount.value, lastUseBasePrice.value);
+        }
+      });
+    }
+  }
+  
   return {
     factor,
     calculateFactor,

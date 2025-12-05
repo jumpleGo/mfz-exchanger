@@ -961,6 +961,20 @@ watch(isTelegramReady, (isReady) => {
   }
 }, { immediate: true });
 
+// Автоматическое обновление при изменении комиссии (например, при окончании freeze)
+watch(factor, () => {
+  // Обновляем поле "Вы получите" только если не происходит обновление из другого источника
+  if (!isUpdatingFromReceived.value && !isUpdatingFromSend.value && model.count > 0) {
+    nextTick(() => {
+      isUpdatingFromSend.value = true;
+      receivedAmountInput.value = formatWithSpaces(calculateAmount.value.toString());
+      nextTick(() => {
+        isUpdatingFromSend.value = false;
+      });
+    });
+  }
+});
+
 onMounted(() => {
   // При инициализации используем базовую цену для корректного расчета
   calculateFactor(calculateAmount.value, isCryptoForSell.value);

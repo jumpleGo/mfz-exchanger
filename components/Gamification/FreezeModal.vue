@@ -32,7 +32,7 @@
                 Комиссия <span class="freeze-modal__highlight">1%</span> на 1 сделку
               </p>
               <p>
-                с любой парой в течение <span class="freeze-modal__highlight">5 минут</span>
+                с любой парой в течение <div class="freeze-modal__highlight">5 минут</div>
               </p>
             </div>
             
