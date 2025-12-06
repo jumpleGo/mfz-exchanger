@@ -4,7 +4,13 @@
       <p class="exchanger__title">отправляете:</p>
       <div class="exchanger__items">
         <p class="exchanger__subtitle">криптовалюта</p>
-        <div v-if="coinsForSell.length" class="exchanger__items--list">
+        <div v-if="isLoading" class="exchanger__items--list">
+          <div v-for="i in 3" :key="'skeleton-coin-sell-' + i" class="exchanger__item--skeleton">
+            <AppSkeleton width="25px" height="25px" variant="circular" />
+            <AppSkeleton width="80px" height="14px" rounded />
+          </div>
+        </div>
+        <div v-else class="exchanger__items--list">
           <div
             v-for="(coin, index) in coinsForSell"
             :key="index + 'coin--first'"
@@ -27,7 +33,13 @@
       </div>
       <div class="exchanger__items">
         <p class="exchanger__subtitle">фиат</p>
-        <div v-if="valutesForSell.length" class="exchanger__items--list">
+        <div v-if="isLoading" class="exchanger__items--list">
+          <div v-for="i in 2" :key="'skeleton-valute-sell-' + i" class="exchanger__item--skeleton">
+            <AppSkeleton width="25px" height="25px" variant="circular" />
+            <AppSkeleton width="60px" height="14px" rounded />
+          </div>
+        </div>
+        <div v-else class="exchanger__items--list">
           <div
             v-for="(valute, index) in valutesForSell"
             :key="index + 'valute--first'"
@@ -57,7 +69,13 @@
       <p class="exchanger__title">получаете:</p>
       <div class="exchanger__items">
         <p class="exchanger__subtitle">фиат</p>
-        <div v-if="valutesForBuy.length" class="exchanger__items--list">
+        <div v-if="isLoading" class="exchanger__items--list">
+          <div v-for="i in 2" :key="'skeleton-valute-buy-' + i" class="exchanger__item--skeleton">
+            <AppSkeleton width="25px" height="25px" variant="circular" />
+            <AppSkeleton width="60px" height="14px" rounded />
+          </div>
+        </div>
+        <div v-else class="exchanger__items--list">
           <div
             v-for="(valute, index) in valutesForBuy"
             :key="index + 'valute--second'"
@@ -81,7 +99,13 @@
       </div>
       <div class="exchanger__items">
         <p class="exchanger__subtitle">криптовалюта</p>
-        <div v-if="coinsForBuy.length" class="exchanger__items--list">
+        <div v-if="isLoading" class="exchanger__items--list">
+          <div v-for="i in 3" :key="'skeleton-coin-buy-' + i" class="exchanger__item--skeleton">
+            <AppSkeleton width="25px" height="25px" variant="circular" />
+            <AppSkeleton width="80px" height="14px" rounded />
+          </div>
+        </div>
+        <div v-else class="exchanger__items--list">
           <div
             v-for="(coin, index) in coinsForBuy"
             :key="index + 'coin--first'"
@@ -104,7 +128,13 @@
       </div>
       <div class="exchanger__items">
         <p class="exchanger__subtitle">другое</p>
-        <div v-if="enabledOthers.length" class="exchanger__items--list">
+        <div v-if="isLoading" class="exchanger__items--list">
+          <div v-for="i in 2" :key="'skeleton-others-' + i" class="exchanger__item--skeleton">
+            <AppSkeleton width="25px" height="25px" variant="circular" />
+            <AppSkeleton width="70px" height="14px" rounded />
+          </div>
+        </div>
+        <div v-else class="exchanger__items--list">
           <div
             v-for="(coin, index) in enabledOthers"
             :key="index + 'coin--first'"
@@ -131,7 +161,7 @@
 
 <script lang="ts" setup>
 import { useExchangerStore } from "~/stores/exchanger";
-import { watch } from "vue";
+import { watch, ref, onBeforeMount } from "vue";
 import type { Selected } from "~/stores/exchangerTypes";
 
 const {
@@ -152,18 +182,19 @@ const {
   isTonForSell,
 } = storeToRefs(useExchangerStore());
 
-const { data } = useAsyncData('exchange-pairs', async () => {
+const isLoading = ref(true);
+
+onBeforeMount(async () => {
   try {
     const response = await $fetch('/api/exchanger/pairs');
     
     coins.value = response.COINS;
     valutes.value = response.VALUTE;
     others.value = response.OTHERS;
-    
-    return response;
   } catch (error) {
     console.error('Failed to load exchange pairs:', error);
-    return { COINS: [], VALUTE: [], OTHERS: [] };
+  } finally {
+    isLoading.value = false;
   }
 });
 
@@ -286,5 +317,17 @@ const selectBuy = (type: "crypto" | "valute" | "others", item: Selected) => {
 }
 .exchanger__subtitle {
   margin: 10px;
+}
+
+.exchanger__item--skeleton {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 8px 10px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  
+  @include mobile-xs {
+    padding: 8px 5px;
+  }
 }
 </style>
