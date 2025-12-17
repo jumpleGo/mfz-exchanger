@@ -1029,7 +1029,7 @@ const sendForm = async () => {
         }
       }
 
-        sendNotification(payload);
+        await sendNotification(payload);
         
         const telegramResponse = await sendOrderCreated(payload, transactionKey);
         
