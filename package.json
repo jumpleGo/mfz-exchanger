@@ -23,13 +23,11 @@
     "lodash.debounce": "latest",
     "luxon": "latest",
     "maska": "latest",
-    "nodemailer": "latest",
     "nuxt": "latest",
     "pinia": "latest",
     "vue": "latest"
   },
   "devDependencies": {
-    "@types/nodemailer": "^7.0.4",
     "sass": "latest",
     "sass-embedded": "latest",
     "typescript": "latest"

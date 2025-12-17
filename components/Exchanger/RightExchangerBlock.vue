@@ -143,7 +143,8 @@
       </div>
       <AppButton
         title="создать заявку"
-        :disabled="!enabledButton"
+        :disabled="!enabledButton || isSubmitting"
+        :loading="isSubmitting"
         @click="validateForm"
       />
     </div>
@@ -197,7 +198,6 @@ import { useExchangerSettings } from "~/composables/exchanger/useExchanger";
 import type { IModel } from "~/components/Exchanger/types";
 import { useValidationByRules } from "~/composables/exchanger/useValidationByRules";
 import { calculateExpirationTime } from "~/components/Exchanger/helpers/exchanger";
-import { sendNotification } from "~/components/Exchanger/helpers/notificationSender";
 import { checkTonAddress, checkTronAddress } from "~/api/checkAddress";
 
 const { sendOrderCreated } = useTelegramOrderNotifications();
@@ -284,6 +284,11 @@ const receivedAmountInput = ref<string>("0");
  * Последнее числовое значение поля "Вы получите" для предотвращения лишних пересчетов
  */
 const lastReceivedNumericValue = ref<number>(0);
+
+/**
+ * Флаг отправки формы (для показа loading состояния)
+ */
+const isSubmitting = ref<boolean>(false);
 
 /**
  * Флаг взаимодействия пользователя с инпутами (для показа ошибок валидации)
@@ -1005,10 +1010,9 @@ const validateForm = async () => {
  */
 const sendForm = async () => {
   const payload = createPayload();
+  isSubmitting.value = true;
 
   try {
-    await sendNotification(payload);
-    
     const tempKey = `temp_${payload.id}`;
     const telegramResponse = await sendOrderCreated(payload, tempKey);
     
@@ -1041,6 +1045,8 @@ const sendForm = async () => {
     }
   } catch (err) {
     console.error("Ошибка при отправке формы:", err);
+  } finally {
+    isSubmitting.value = false;
   }
 };
 

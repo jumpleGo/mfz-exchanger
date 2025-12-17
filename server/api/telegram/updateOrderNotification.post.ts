@@ -59,6 +59,18 @@ export default defineEventHandler(async (event) => {
         return sendResponse
       }
       
+      // Игнорируем ошибку если сообщение не изменилось
+      if (data.description?.includes('message is not modified')) {
+        console.log('[Telegram] Message not modified, skipping update')
+        return {
+          success: true,
+          messageId: transaction.telegramMessageId,
+          chatId: transaction.telegramChatId,
+          updated: false,
+          skipped: true
+        }
+      }
+      
       throw createError({
         statusCode: 500,
         message: `Telegram API error: ${data.description}`

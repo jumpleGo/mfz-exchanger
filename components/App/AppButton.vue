@@ -1,7 +1,7 @@
 <template>
   <component
     :is="componentButton"
-    :disabled="disabled"
+    :disabled="disabled || loading"
     :href="props.to"
     :to="props.to"
     :class="[
@@ -9,11 +9,13 @@
       buttonClass,
       classBySize,
       { '--fluid': fluid },
-      { '--disabled': disabled },
+      { '--disabled': disabled || loading },
+      { '--loading': loading },
     ]"
     :target="target"
   >
-    {{ props.title }}
+    <span v-if="loading" class="button__spinner"></span>
+    <span :class="{ 'button__text--hidden': loading }">{{ props.title }}</span>
     <slot></slot>
   </component>
 </template>
@@ -135,6 +137,32 @@ const buttonClass = computed(() => classByType[props.type]);
   backdrop-filter: grayscale(5px);
   &:hover {
     cursor: not-allowed;
+  }
+}
+
+.--loading {
+  position: relative;
+  pointer-events: none;
+}
+
+.button__spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(0, 0, 0, 0.1);
+  border-left-color: black;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  margin-right: 8px;
+}
+
+.button__text--hidden {
+  opacity: 0;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
   }
 }
 </style>
