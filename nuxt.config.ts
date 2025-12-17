@@ -73,7 +73,7 @@ export default defineNuxtConfig({
       ASSETS_IMAGE_BUCKET: process.env.NUXT_ASSETS_IMAGE_BUCKET,
       SITE_URL: process.env.NUXT_SITE_URL,
       TELEGRAM_BOT_USERNAME: process.env.NUXT_TELEGRAM_BOT_USERNAME,
-      gamificationFreezeEnabled: process.env.NUXT_GAMIFICATION_FREEZE_ENABLED === 'true',
+      gamificationFreezeEnabled: Boolean(process.env.NUXT_GAMIFICATION_FREEZE_ENABLED),
       gamificationFreezeChance: parseFloat(process.env.NUXT_GAMIFICATION_FREEZE_CHANCE || '1'),
       gamificationFreezeDuration: parseInt(process.env.NUXT_GAMIFICATION_FREEZE_DURATION || '300000'),
       gamificationFreezeCommission: parseFloat(process.env.NUXT_GAMIFICATION_FREEZE_COMMISSION || '1'),
