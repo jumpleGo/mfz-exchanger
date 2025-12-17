@@ -1,11 +1,11 @@
 import { initializeApp } from 'firebase/app'
 import { getDatabase } from 'firebase/database'
 import {ref as dbRef} from "@firebase/database";
+import {defineNuxtPlugin, useRuntimeConfig} from "nuxt/app";
 
 export default defineNuxtPlugin((nuxtApp) => {
 
     const config : Record<string, string> = useRuntimeConfig()
-    console.log(config)
 
     const configFirebase: {databaseURL: string} = {databaseURL: config.public.databaseURL}
     const firebase = initializeApp(configFirebase);

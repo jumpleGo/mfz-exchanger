@@ -19,7 +19,13 @@ export const getMailTransporter = () => {
       host: nodemailerConfig.host,
       port: nodemailerConfig.port,
       secure: nodemailerConfig.secure,
-      auth: nodemailerConfig.auth
+      auth: nodemailerConfig.auth,
+      connectionTimeout: 10000,
+      greetingTimeout: 10000,
+      socketTimeout: 10000,
+      pool: true,
+      maxConnections: 5,
+      maxMessages: 10
     })
   }
   return transporter

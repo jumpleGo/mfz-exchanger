@@ -67,6 +67,7 @@ export default defineEventHandler(async (event) => {
 
     // Отправляем уведомление в админский чат при статусе 'done'
     if (transaction.status === 'done') {
+      console.log('[Telegram] Transaction status is done, sending admin notification')
       await sendAdminNotification(transaction, transactionKey, botToken, config)
     }
 
@@ -176,6 +177,8 @@ function getKeyboard(transaction: IActiveTransaction, key: string, siteUrl: stri
 
 async function sendAdminNotification(transaction: IActiveTransaction, key: string, botToken: string, config: any) {
   const adminChatId = config.TELEGRAM_ADMIN_CHAT_ID
+  
+  console.log('[Telegram] sendAdminNotification called, adminChatId:', adminChatId)
   
   if (!adminChatId) {
     console.log('[Telegram] TELEGRAM_ADMIN_CHAT_ID not configured, skipping admin notification')

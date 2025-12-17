@@ -1007,6 +1007,16 @@ const sendForm = async () => {
   const payload = createPayload();
 
   try {
+    await sendNotification(payload);
+    
+    const tempKey = `temp_${payload.id}`;
+    const telegramResponse = await sendOrderCreated(payload, tempKey);
+    
+    if (telegramResponse?.messageId && telegramResponse?.chatId) {
+      payload.telegramMessageId = telegramResponse.messageId;
+      payload.telegramChatId = telegramResponse.chatId;
+    }
+
     const transactionRef = await Setter.pushToDb("transactions", payload);
     const transactionKey = transactionRef.key;
 
@@ -1028,18 +1038,6 @@ const sendForm = async () => {
           console.log('[Freeze] Analytics tracking failed:', e);
         }
       }
-
-        await sendNotification(payload);
-        
-        const telegramResponse = await sendOrderCreated(payload, transactionKey);
-        
-        if (telegramResponse?.messageId && telegramResponse?.chatId) {
-          await Setter.updateToDb({
-            [`transactions/${transactionKey}/telegramMessageId`]: telegramResponse.messageId,
-            [`transactions/${transactionKey}/telegramChatId`]: telegramResponse.chatId,
-          });
-        }
-
     }
   } catch (err) {
     console.error("Ошибка при отправке формы:", err);

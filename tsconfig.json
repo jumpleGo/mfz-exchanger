@@ -1,8 +1,61 @@
 {
-  "extends": "./.nuxt/tsconfig.json",
   "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
+    "jsx": "preserve",
+    "jsxImportSource": "vue",
+    
     "strict": true,
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "noEmit": true,
+    "resolveJsonModule": true,
+    "allowImportingTsExtensions": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+    
+    "types": [
+      "node",
+      "@nuxt/types",
+      "@pinia/nuxt",
+      "@nuxtjs/tailwindcss"
+    ],
+    
+    "baseUrl": ".",
+    "paths": {
+      "~/*": ["./*"],
+      "@/*": ["./*"],
+      "~~/*": ["./*"],
+      "@@/*": ["./*"],
+      "#app": ["./node_modules/nuxt/dist/app"],
+      "#app/*": ["./node_modules/nuxt/dist/app/*"],
+      "#build": ["./.nuxt"],
+      "#build/*": ["./.nuxt/*"],
+      "#components": ["./.nuxt/components"],
+      "#imports": ["./.nuxt/imports"],
+      "@css": ["./style"],
+      "@css/*": ["./style/*"]
+    }
+  },
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    "**/*.vue",
+    "**/*.mts",
+    "**/*.d.ts",
+    ".nuxt/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    ".nuxt/dist",
+    ".output",
+    "dist"
+  ],
+  "vueCompilerOptions": {
+    "target": 3
   }
 }
