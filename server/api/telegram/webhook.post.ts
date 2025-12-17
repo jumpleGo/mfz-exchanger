@@ -82,6 +82,67 @@ async function handleCallbackQuery(callbackQuery: any, botToken: string) {
     
     await answerCallbackQuery(callbackQuery.id, '✅ Заявка отмечена как оплаченная!', botToken)
   }
+
+  // Обработка нажатия кнопки "Подтвердить" от админа
+  if (data.startsWith('admin_confirm_')) {
+    const transactionKey = data.replace('admin_confirm_', '')
+    
+    // Обновляем статус заявки в Firebase на 'payed'
+    const { useServerDatabase } = await import('~/server/utils/firebase')
+    const { databaseRef } = useServerDatabase()
+    const { child, get, update } = await import('firebase/database')
+    
+    const transactionRef = child(databaseRef, `transactions/${transactionKey}`)
+    const transactionSnapshot = await get(transactionRef)
+    
+    if (!transactionSnapshot.exists()) {
+      await answerCallbackQuery(callbackQuery.id, '❌ Заявка не найдена', botToken)
+      return
+    }
+    
+    const transaction = transactionSnapshot.val()
+    
+    // Обновляем статус на "payed"
+    const updates: Record<string, any> = {}
+    updates[`transactions/${transactionKey}/status`] = 'payed'
+    
+    await update(databaseRef, updates)
+    
+    // Обновляем сообщение в админском чате, убирая кнопку
+    const { chat_id, message_id } = message
+    
+    const currentText = message.text
+    const updatedText = currentText + '\n\n✅ <b>Подтверждено</b> <i>' + new Date().toLocaleString('ru-RU') + '</i>'
+    
+    await fetch(`https://api.telegram.org/bot${botToken}/editMessageText`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        chat_id: chat_id,
+        message_id: message_id,
+        text: updatedText,
+        parse_mode: 'HTML'
+      })
+    })
+    
+    // Обновляем сообщение пользователя о завершении заявки
+    const updatedTransaction = {
+      ...transaction,
+      status: 'payed'
+    }
+    
+    await $fetch('/api/telegram/updateOrderNotification', {
+      method: 'POST',
+      body: {
+        transaction: updatedTransaction,
+        transactionKey
+      }
+    })
+    
+    await answerCallbackQuery(callbackQuery.id, '✅ Заявка подтверждена!', botToken)
+  }
 }
 
 async function handleMessage(message: any) {

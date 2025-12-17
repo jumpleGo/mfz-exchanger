@@ -65,6 +65,11 @@ export default defineEventHandler(async (event) => {
       })
     }
 
+    // Отправляем уведомление в админский чат при статусе 'done'
+    if (transaction.status === 'done') {
+      await sendAdminNotification(transaction, transactionKey, botToken, config)
+    }
+
     return {
       success: true,
       messageId: transaction.telegramMessageId,
@@ -166,5 +171,61 @@ function getKeyboard(transaction: IActiveTransaction, key: string, siteUrl: stri
         ]
       ]
     }
+  }
+}
+
+async function sendAdminNotification(transaction: IActiveTransaction, key: string, botToken: string, config: any) {
+  const adminChatId = config.TELEGRAM_ADMIN_CHAT_ID
+  
+  if (!adminChatId) {
+    console.log('[Telegram] TELEGRAM_ADMIN_CHAT_ID not configured, skipping admin notification')
+    return
+  }
+
+  const message = `✅ <b>Заявка оплачена #${key.slice(-6)}</b>
+
+💸 <b>Отдал:</b> ${transaction.countSell} ${transaction.sell.toUpperCase()}
+💰 <b>Получил:</b> ${transaction.countBuy} ${transaction.buy.toUpperCase()}
+
+${transaction.address ? `📬 <b>Адрес:</b> <code>${transaction.address}</code>` : ''}
+${transaction.net ? `🌐 <b>Сеть:</b> ${transaction.net}` : ''}
+${transaction.memo ? `📝 <b>Memo:</b> <code>${transaction.memo}</code>` : ''}
+${transaction.telegram ? `👤 <b>Telegram:</b> @${transaction.telegram}` : ''}
+
+<i>Заявка создана: ${new Date(transaction.id).toLocaleString('ru-RU')}</i>
+<i>оплачена: ${new Date().toLocaleString('ru-RU')}</i>`
+
+  try {
+    const response = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        chat_id: adminChatId,
+        text: message,
+        parse_mode: 'HTML',
+        reply_markup: {
+          inline_keyboard: [
+            [
+              {
+                text: '✅ Подтвердить',
+                callback_data: `admin_confirm_${key}`
+              }
+            ]
+          ]
+        }
+      })
+    })
+
+    const data = await response.json()
+
+    if (!data.ok) {
+      console.error('[Telegram] Failed to send admin notification:', data.description)
+    } else {
+      console.log('[Telegram] Admin notification sent successfully')
+    }
+  } catch (error) {
+    console.error('[Telegram] Error sending admin notification:', error)
   }
 }
