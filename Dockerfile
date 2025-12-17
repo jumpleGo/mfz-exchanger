@@ -1,13 +1,10 @@
-FROM node:22-alpine
-
-# Установка зависимостей для сборки
-RUN apk add --no-cache libc6-compat
+FROM node:22-slim
 
 WORKDIR /app
 
 COPY package.json package-lock.json ./
 # Установка зависимостей
-RUN npm install
+RUN npm i
 
 # Копируем остальные файлы
 COPY . .
