@@ -13,9 +13,9 @@
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
-    "@pinia/nuxt": "latest",
     "@nuxt/image": "latest",
     "@nuxtjs/tailwindcss": "latest",
+    "@pinia/nuxt": "latest",
     "@vuelidate/core": "latest",
     "@vuelidate/validators": "latest",
     "axios": "latest",
@@ -23,12 +23,13 @@
     "lodash.debounce": "latest",
     "luxon": "latest",
     "maska": "latest",
+    "nodemailer": "latest",
     "nuxt": "latest",
-    "nuxt-mail": "latest",
     "pinia": "latest",
     "vue": "latest"
   },
   "devDependencies": {
+    "@types/nodemailer": "^7.0.4",
     "sass": "latest",
     "sass-embedded": "latest",
     "typescript": "latest"

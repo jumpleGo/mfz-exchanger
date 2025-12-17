@@ -62,22 +62,6 @@ export default defineNuxtConfig({
   modules: [
     "@pinia/nuxt",
     "@nuxtjs/tailwindcss",
-    [
-      "nuxt-mail",
-      {
-        message: [{ name: "main", to: "rrotatew@gmail.com" }],
-        smtp: {
-          host: "smtp.timeweb.ru",
-          port: 2525,
-          secure: false,
-          requireTLS: true,
-          auth: {
-            user: "mailer@moneyflowzen.ru",
-            pass: ":nB0.?MY}-%Qb|",
-          },
-        },
-      },
-    ],
     "@nuxt/image",
   ],
 
