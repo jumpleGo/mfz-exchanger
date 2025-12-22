@@ -47,7 +47,7 @@ export default defineEventHandler(async (event) => {
 
     // Получаем курс USD/RUB
     try {
-      const { data: rateResponse } = await axios.get('https://api.currencyapi.com/v3/latest?apikey=cur_live_34DPnNwfsofhIluKiBRne1uEJAp0K3OzyEtcK0Om&currencies=RUB')
+      const { data: rateResponse } = await axios.get(`https://api.currencyapi.com/v3/latest?apikey=${process.env.NUXT_CRYPTO_CURRENCY_TOKEN}&currencies=RUB`)
       priceUsd = rateResponse.data.RUB.value
       if (priceUsd === 0) {
         hasError = true
