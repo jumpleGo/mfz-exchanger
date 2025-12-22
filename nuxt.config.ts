@@ -70,6 +70,7 @@ export default defineNuxtConfig({
     TELEGRAM_ADMIN_CHAT_ID: process.env.NUXT_TELEGRAM_ADMIN_CHAT_ID,
     public: {
       databaseURL: process.env.NUXT_databaseURL,
+      cryptoCurrencyToken: process.env.NUXT_CRYPTO_CURRENCY_TOKEN,
       ASSETS_IMAGE_BUCKET: process.env.NUXT_ASSETS_IMAGE_BUCKET,
       SITE_URL: process.env.NUXT_SITE_URL,
       TELEGRAM_BOT_USERNAME: process.env.NUXT_TELEGRAM_BOT_USERNAME,
